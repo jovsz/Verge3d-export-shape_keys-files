@@ -1814,13 +1814,18 @@ def generateMeshes(operator, context, exportSettings, glTF):
                     for bl_shape_key in bl_mesh.shape_keys.key_blocks:
                         if bl_shape_key != bl_shape_key.relative_key and bl_shape_key != bl_mesh.shape_keys.reference_key:
                             weights.append(bl_shape_key.value)
-                            targetNames.append(bl_shape_key.name)
+                            targetNames.append({bl_shape_key.name: {"name": bl_shape_key.name,
+                                                                    "value": bl_shape_key.value,
+                                                                    "min": bl_shape_key.slider_min,
+                                                                    "max": bl_shape_key.slider_max}})
 
 
                     mesh['weights'] = weights
 
                     if 'extras' not in mesh:
                         mesh['extras'] = {}
+
+                    print(targetNames)
                     mesh['extras']['targetNames'] = targetNames
 
 

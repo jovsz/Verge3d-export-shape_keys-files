@@ -113,6 +113,7 @@ class V3D_OT_export():
             exportSettings['move_keyframes'] = v3d_export.export_move_keyframes
         else:
             exportSettings['frame_range'] = False
+
             exportSettings['move_keyframes'] = False
 
         exportSettings['uri_cache'] = { 'uri': [], 'bl_datablocks': [] }

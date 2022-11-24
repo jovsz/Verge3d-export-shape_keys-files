@@ -139,7 +139,7 @@ class V3D_OT_export():
         exportSettings['morph_tangent'] = True
 
         exportSettings['displacement'] = False
-        print(exportSettings)
+
 
         return gltf2_export.save(self, context, exportSettings)
 

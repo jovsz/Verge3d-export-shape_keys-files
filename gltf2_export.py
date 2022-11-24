@@ -26,7 +26,7 @@ import pprint
 from .gltf2_filter import *
 from .gltf2_generate import *
 
-url = 'http://localhost:8000/api/v1/minio/fileblender/'
+
 pp = pprint.PrettyPrinter(width=41, compact=True)
 
 def prepare(exportSettings):
@@ -179,46 +179,53 @@ def save(operator, context, exportSettings):
         file.close()
 
         compressLZMA(exportSettings['filepath'], exportSettings)
-    try:
-        def getShapeKeys():
-            o = bpy.context.collection
-            detailObj = {}
-            list = []
-
-            for obj in o.all_objects:
-                if hasattr(obj.data, 'shape_keys'):
-                    print('tiene atributo shape')
-                    if hasattr(obj.data.shape_keys, 'key_blocks'):
-                        print('tiene atributo key_blocks')
-                        detailObj['name'] = obj.name
-                        print(obj.name, obj.data.shape_keys.key_blocks)
-                        for skblock in obj.data.shape_keys.key_blocks[1:]:
-                            list.append({skblock.name: {'value': skblock.value, 'min': skblock.slider_min,'max': skblock.slider_max}})
-            detailObj['shape_keys'] = list
-            detailObj['type'] = bpy.context.scene.manage_props.component
-            detailObj['user'] = bpy.context.scene.manage_props.user
-            detailObj['password'] = bpy.context.scene.manage_props.password
-            print(detailObj)
-            return detailObj
 
 
+        print('props!!!!!', exportSettings['cus_props'])
+    detailObj = {}
+    def getShapeKeys():
+        o = bpy.context.collection
+
+        list = []
+        custom = {}
+
+        for obj in o.all_objects:
+            detailObj['name'] = obj.name
+            if hasattr(obj.data, 'shape_keys') and bpy.context.scene.manage_props.component:
+                if hasattr(obj.data.shape_keys, 'key_blocks'):
+                    for skblock in obj.data.shape_keys.key_blocks[1:]:
+                        list.append({skblock.name: {'value': skblock.value, 'min': skblock.slider_min,'max': skblock.slider_max}})
+
+
+        for cust in exportSettings['cus_props']:
+            print(exportSettings['cus_props'][cust])
+            custom[cust] = exportSettings['cus_props'][cust]
+        detailObj['pathName'] = exportSettings['filepath'].split('\\').pop()
+        detailObj['shape_keys'] = list
+        detailObj['custom_props'] = custom
+        detailObj['hardware'] = bpy.context.scene.manage_props.component
+
+        return detailObj
+
+    getShapeKeys()
+    json_obj = json.dumps(detailObj, indent=4)
+    print('Datatype : ',type(json_obj))
+    print(json_obj)
+    # shapekeys = json.dumps(detailObj)
+    binPath = exportSettings['filepath'].split('.')[0] + '.bin'
+    src_glft = open(exportSettings['filepath'], 'rb')
+    src_bin = open(binPath, 'rb')
+
+    headers = {
+        'Authorization': 'Bearer ' + bpy.context.scene.manage_props.token,
+    }
+    x = requests.post(bpy.context.scene.manage_props.url,headers=headers ,data={'data': json_obj}, files=[('files', src_glft),('files', src_bin)] )
+
+    print(x.json())
 
 
 
-        shapekeys = getShapeKeys()
-        print(exportSettings['filepath'])
-        binPath = exportSettings['filepath'].split('.')[0] + '.bin'
 
-        src_glft = open(exportSettings['filepath'], 'rb')
-        src_bin = open(binPath, 'rb')
-        #
-        #
-        x = requests.post(url,data = shapekeys, files = [('files', src_glft),('files', src_bin)] )
-
-        print(x)
-        printLog('INFO', 'Informacion mandada a la api')
-    except:
-        printLog('INFO', 'Fallo la agrupacion y llamada a la api')
     finish(exportSettings)
     printLog('INFO', 'Finished glTF 2.0 export ')
 

@@ -470,11 +470,14 @@ def createCustomProperty(bl_element):
     black_list = ['cycles', 'cycles_visibility', 'cycles_curves', '_RNA_UI', 'v3d']
 
     count = 0
+
     for custom_property in bl_element.keys():
+        # print(custom_property)
         if custom_property in black_list:
             continue
 
         value = bl_element[custom_property]
+        # print(bl_element[custom_property])
 
         add_value = False
 

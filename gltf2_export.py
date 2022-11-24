@@ -181,11 +181,10 @@ def save(operator, context, exportSettings):
         compressLZMA(exportSettings['filepath'], exportSettings)
 
 
-        print('props!!!!!', exportSettings['cus_props'])
+
     detailObj = {}
     def getShapeKeys():
         o = bpy.context.collection
-
         list = []
         custom = {}
 
@@ -198,8 +197,8 @@ def save(operator, context, exportSettings):
 
 
         for cust in exportSettings['cus_props']:
-            print(exportSettings['cus_props'][cust])
             custom[cust] = exportSettings['cus_props'][cust]
+
         detailObj['pathName'] = exportSettings['filepath'].split('\\').pop()
         detailObj['shape_keys'] = list
         detailObj['custom_props'] = custom
@@ -209,8 +208,6 @@ def save(operator, context, exportSettings):
 
     getShapeKeys()
     json_obj = json.dumps(detailObj, indent=4)
-    print('Datatype : ',type(json_obj))
-    print(json_obj)
     # shapekeys = json.dumps(detailObj)
     binPath = exportSettings['filepath'].split('.')[0] + '.bin'
     src_glft = open(exportSettings['filepath'], 'rb')
@@ -219,14 +216,13 @@ def save(operator, context, exportSettings):
     headers = {
         'Authorization': 'Bearer ' + bpy.context.scene.manage_props.token,
     }
-    x = requests.post(bpy.context.scene.manage_props.url,headers=headers ,data={'data': json_obj}, files=[('files', src_glft),('files', src_bin)] )
 
-    print(x.json())
-
-
-
+    if bpy.context.scene.manage_props.send:
+        x = requests.post(bpy.context.scene.manage_props.url, headers=headers, data={'data': json_obj}, files=[('files', src_glft),('files', src_bin)] )
+        print(x.json())
 
     finish(exportSettings)
+
     printLog('INFO', 'Finished glTF 2.0 export ')
 
     bpy.context.window_manager.progress_end()
